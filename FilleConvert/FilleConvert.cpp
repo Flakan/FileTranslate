@@ -19,7 +19,8 @@
 char DirName[128];
 char namebuf[128];
 
-
+StorageFile storageFile;
+void  Process_DataFile(void);
 FILE *ParamIndexFile_Open(const char *path)
 {
 	char buf[128];
@@ -61,10 +62,11 @@ int main(int argc, char* argv[])
 	
 	memset(DirName,0,sizeof(DirName));
 	sprintf_s(DirName,"%s",argv[1]);
+	//sprintf_s(DirName,"%s","C:\\Users\Jack\Desktop\develop\recoder201810282258");
 
 	ParamFile_Header PfHeader;
 	CHRESULT  Chresult;
-	StorageFile storageFile;
+	
 
 	FILE *fpParamIndex =ParamIndexFile_Open(argv[1]);
 	if(fpParamIndex ==NULL)
@@ -85,7 +87,7 @@ int main(int argc, char* argv[])
 		printf("head:%s ,maxch:%d,intervalTimelong :%d,SampleRate:%d PsTrigCaculateTimelong %d\n",
 			PfHeader.head,PfHeader.maxch,PfHeader.intervalTimelong,PfHeader.SampleRate,PfHeader.PsTrigCaculateTimelong );
 		char buf[128];
-		sprintf_s(buf,"%s/%s.txt",DirName,file);
+		sprintf_s(buf,"%s/%sparam.txt",DirName,file);
 		FILE *fptxt=fopen(buf,"wb+");
 		CreateTxtHeader(fptxt);
 		while(storageFile.ReadParam(fpParam,&Chresult)==0)
@@ -103,8 +105,23 @@ int main(int argc, char* argv[])
 	printf("param file process  finished \n");
 	printf("start process data file \n");
 
+	Process_DataFile();
 
+	printf("data file process finished \n");
 	return 0;
+}
+int checkalldatafile_is_finish(int *finish)
+{
+	int ret = 1;
+	for(int i=0;i<CHANNELNUM;i++)
+	{
+		if(finish[i]==0)
+		{
+			ret = 0;
+			break;
+		}
+	}
+	return ret;
 }
 void  Process_DataFile(void)
 {
@@ -120,14 +137,67 @@ void  Process_DataFile(void)
 	{
 		char index[128];
 		char name[128];
+		int  finish[CHANNELNUM];
+		DataFile_Header dfheader[CHANNELNUM];
+		FILE *fdata[CHANNELNUM];
+		memset(finish,1,sizeof(finish));
+		memset(fdata,0,sizeof(fdata));
 		memset(name,0,sizeof(name));
 		memset(index,0,sizeof(index));
 		fscanf(fpindex,"%s",index);
-		
+		char *ptr = strstr(index,",");
+		sprintf_s(name,"%s/data_s/%sdata.txt",DirName,++ptr);
+		printf("%s\n",name);
+		FILE *fpdatatxt=fopen(name,"wb");
+		if(fpdatatxt ==NULL)
+		{
+			continue;
+		}
 		for(int i=0;i<CHANNELNUM;i++)
 		{
-
+			sprintf_s(name,"%s/data_s/%s_%d.data",DirName,ptr,i);
+			printf("%s\n",name);
+			fdata[i] = fopen(name,"rb");
+			if(fdata[i]==NULL)
+				continue;
+			finish[i]=0;
+			storageFile.ReadDataHeader(fdata[i],&dfheader[i]);
 		}
+		for(int i=0;i<CHANNELNUM;i++)
+		{
+			if(fdata[i] == NULL)
+				continue;
+			fprintf(fpdatatxt,"%14s%-2d","AI_",i);
+		}
+		fprintf(fpdatatxt,"\n");
+		printf("write data txt header finish\n");
+
+		while(!checkalldatafile_is_finish(finish)){
+			for(int i =0 ;i<CHANNELNUM;i++)
+			{
+				float data;
+				if(fdata[i] == NULL)
+					continue;
+				if(feof(fdata[i])){
+					finish[i]=1;
+					continue;
+				}
+				fread(&data,sizeof(float),1,fdata[i]);
+				fprintf(fpdatatxt,"%16.4f",data);
+			}
+			fprintf(fpdatatxt,"\n");
+		}
+
+		printf("write data to txt finish \n");
+		for(int i=0;i<CHANNELNUM;i++)
+		{
+			if(fdata[i] == NULL)
+				continue;
+			fclose(fdata[i]);
+		}
+		printf("close data\n");
+		fclose(fpdatatxt);
+		printf("close txt\n");
 	}
 
 	fclose(fpindex);
