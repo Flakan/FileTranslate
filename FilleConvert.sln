@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FilleConvert", "FilleConvert\FilleConvert.vcxproj", "{D78A202F-D6A1-440C-A5F5-BF4B4FFDBED5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D78A202F-D6A1-440C-A5F5-BF4B4FFDBED5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D78A202F-D6A1-440C-A5F5-BF4B4FFDBED5}.Debug|Win32.Build.0 = Debug|Win32
+		{D78A202F-D6A1-440C-A5F5-BF4B4FFDBED5}.Release|Win32.ActiveCfg = Release|Win32
+		{D78A202F-D6A1-440C-A5F5-BF4B4FFDBED5}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
